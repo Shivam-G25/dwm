@@ -1,0 +1,83 @@
+# for comments (don't use in code dumbo!)
+
+#Step 1: Create a Database
+
+CREATE DATABASE sales_dw;
+USE sales_dw;
+
+#Step 2: Create Dimension Tables
+
+#Product Dimension
+CREATE TABLE dim_product (
+    product_id INT PRIMARY KEY,
+    product_name VARCHAR(100),
+    category VARCHAR(50),
+    brand VARCHAR(50)
+);
+
+#Customer Dimension
+CREATE TABLE dim_customer (
+    customer_id INT PRIMARY KEY,
+    customer_name VARCHAR(100),
+    gender VARCHAR(10),
+    city VARCHAR(50)
+);
+
+#Store Dimension
+CREATE TABLE dim_store (
+    store_id INT PRIMARY KEY,
+    store_name VARCHAR(100),
+    location VARCHAR(50),
+    manager_name VARCHAR(100)
+);
+
+#Time Dimension
+CREATE TABLE dim_time (
+    time_id INT PRIMARY KEY,
+    date DATE,
+    month VARCHAR(20),
+    quarter VARCHAR(10),
+    year INT
+);
+
+#Step 3: Create the Fact Table
+
+CREATE TABLE fact_sales (
+    sale_id INT PRIMARY KEY,
+    product_id INT,
+    customer_id INT,
+    store_id INT,
+    time_id INT,
+    quantity_sold INT,
+    total_amount DECIMAL(10,2),
+    FOREIGN KEY (product_id) REFERENCES dim_product(product_id),
+    FOREIGN KEY (customer_id) REFERENCES dim_customer(customer_id),
+    FOREIGN KEY (store_id) REFERENCES dim_store(store_id),
+    FOREIGN KEY (time_id) REFERENCES dim_time(time_id)
+);
+
+#Step 4: Insert Sample Data (only 2 data given, add more yourself)
+
+INSERT INTO dim_product VALUES
+(1, 'Laptop', 'Electronics', 'HP'),
+(2, 'Smartphone', 'Electronics', 'Samsung');
+
+INSERT INTO dim_customer VALUES
+(1, 'Amit', 'Male', 'Mumbai'),
+(2, 'Riya', 'Female', 'Pune');
+
+INSERT INTO dim_store VALUES
+(1, 'Tech World', 'Mumbai', 'Suresh'),
+(2, 'Gadget Hub', 'Pune', 'Neha');
+
+INSERT INTO dim_time VALUES
+(1, '2024-05-12', 'May', 'Q2', 2024),
+(2, '2024-06-14', 'June', 'Q2', 2024);
+
+INSERT INTO fact_sales VALUES
+(1, 1, 1, 1, 1, 2, 120000.00),
+(2, 2, 2, 2, 2, 1, 35000.00);
+
+#Step 5: Display Database
+
+SELECT * FROM fact_sales;
