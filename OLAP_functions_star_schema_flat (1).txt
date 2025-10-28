@@ -1,0 +1,65 @@
+-- OLAP Operations on Star Schema (sales_dw)
+
+-- 1. SLICE
+SELECT 
+f.sale_id, p.product_name, c.customer_name, s.store_name, t.month, f.total_amount
+FROM fact_sales f
+JOIN dim_product p ON f.product_id = p.product_id
+JOIN dim_customer c ON f.customer_id = c.customer_id
+JOIN dim_store s ON f.store_id = s.store_id
+JOIN dim_time t ON f.time_id = t.time_id
+WHERE t.month = 'May';
+
+
+-- 2. DICE
+SELECT 
+p.category, c.city, t.quarter, t.year, f.total_amount
+FROM fact_sales f
+JOIN dim_product p ON f.product_id = p.product_id
+JOIN dim_customer c ON f.customer_id = c.customer_id
+JOIN dim_store s ON f.store_id = s.store_id
+JOIN dim_time t ON f.time_id = t.time_id
+WHERE p.category = 'Electronics'
+AND c.city = 'Mumbai'
+AND t.quarter = 'Q2'
+AND t.year = 2024;
+
+
+-- 3. ROLL-UP (Yearly total)
+SELECT 
+t.year, 
+SUM(f.total_amount) AS total_sales
+FROM fact_sales f
+JOIN dim_time t ON f.time_id = t.time_id
+GROUP BY t.year;
+
+
+-- 3.1. ROLL-UP (Monthly total per year)
+SELECT 
+t.year, t.month, 
+SUM(f.total_amount) AS monthly_sales
+FROM fact_sales f
+JOIN dim_time t ON f.time_id = t.time_id
+GROUP BY t.year, t.month
+ORDER BY t.year, t.month;
+
+
+-- 4. DRILL-DOWN (Year → Quarter → Month)
+SELECT 
+t.year, t.quarter, t.month, 
+SUM(f.total_amount) AS total_sales
+FROM fact_sales f
+JOIN dim_time t ON f.time_id = t.time_id
+GROUP BY t.year, t.quarter, t.month
+ORDER BY t.year, t.quarter, t.month;
+
+
+-- 5. PIVOT (Product vs Year)
+SELECT 
+p.product_name,
+SUM(CASE WHEN t.year = 2024 THEN f.total_amount ELSE 0 END) AS Sales_2024,
+SUM(CASE WHEN t.year = 2025 THEN f.total_amount ELSE 0 END) AS Sales_2025
+FROM fact_sales f
+JOIN dim_product p ON f.product_id = p.product_id
+JOIN dim_time t ON f.time_id = t.time_id
+GROUP BY p.product_name;
